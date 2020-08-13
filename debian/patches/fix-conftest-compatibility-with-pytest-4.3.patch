@@ -1,0 +1,34 @@
+From b33c95530b0d5e717fd36f5b775137c83c3bcf67 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Miro=20Hron=C4=8Dok?= <miro@hroncok.cz>
+Date: Thu, 14 Mar 2019 19:54:42 +0100
+Subject: [PATCH] Fix conftest.py compatibility with pytest 4.3
+
+While pytest in tox.ini is explicitly set to be 3.3.2, in Fedora 31
+we are about to update to a newer version of pytest.
+In order to be able to test babel, we need pytest 4.3 support.
+
+This adds support for pytest 4.3 without breaking support for 3.3.2.
+---
+ tests/conftest.py | 9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
+
+diff --git a/tests/conftest.py b/tests/conftest.py
+index be93b2b..5b14b1c 100644
+--- a/tests/conftest.py
++++ b/tests/conftest.py
+@@ -10,6 +10,9 @@ def os_environ(monkeypatch):
+ 
+ 
+ def pytest_generate_tests(metafunc):
+-    if hasattr(metafunc.function, "all_locales"):
+-        from babel.localedata import locale_identifiers
+-        metafunc.parametrize("locale", list(locale_identifiers()))
++    if hasattr(metafunc.function, "pytestmark"):
++        for mark in metafunc.function.pytestmark:
++            if mark.name == "all_locales":
++                from babel.localedata import locale_identifiers
++                metafunc.parametrize("locale", list(locale_identifiers()))
++                break
+-- 
+2.24.0
+

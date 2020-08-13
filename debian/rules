@@ -1,0 +1,69 @@
+#!/usr/bin/make -f
+
+export LC_TIME=C
+export LANGUAGE=C
+
+PYTHONS:=$(shell pyversions -vr)
+PYTHON3S:=$(shell py3versions -vr)
+
+%:
+	dh $@ --buildsystem=python_distutils --with python2,python3,sphinxdoc
+
+override_dh_auto_build:
+	dh_auto_build -O--buildsystem=python_distutils
+	# Generate the localedata folder data out of the xml files
+	# downloaded in debian/repack
+	python3 scripts/import_cldr.py common
+
+override_dh_auto_install:
+	set -e && for pyvers in $(PYTHONS); do \
+		python$$pyvers setup.py install --install-layout=deb \
+			--root $(CURDIR)/debian/python-babel; \
+	done
+	set -e && for pyvers in $(PYTHON3S); do \
+		python$$pyvers setup.py install --install-layout=deb \
+			--root $(CURDIR)/debian/python3-babel; \
+	done
+	mv debian/python-babel/usr/bin/pybabel debian/python-babel/usr/bin/pybabel-python2
+	mv debian/python3-babel/usr/bin/pybabel debian/python3-babel/usr/bin/pybabel-python3
+
+override_dh_python2:
+	dh_python2 -O--buildsystem=python_distutils
+	set -e && for pyvers in $(PYTHONS); do \
+		rm debian/python-babel/usr/lib/python$$pyvers/dist-packages/babel/locale-data/*.dat ; \
+		rmdir debian/python-babel/usr/lib/python$$pyvers/dist-packages/babel/locale-data ; \
+		ln -s ../../../../share/python-babel-localedata/locale-data debian/python-babel/usr/lib/python$$pyvers/dist-packages/babel/locale-data ; \
+		rm debian/python-babel/usr/lib/python$$pyvers/dist-packages/babel/global.dat ; \
+		ln -s ../../../../share/python-babel-localedata/global.dat debian/python-babel/usr/lib/python$$pyvers/dist-packages/babel/global.dat ; \
+	done
+
+override_dh_python3:
+	dh_python3 -O--buildsystem=python_distutils --shebang=/usr/bin/python3
+	rm -r debian/python3-babel/usr/lib/python3/dist-packages/babel/locale-data ; \
+	ln -s ../../../../share/python-babel-localedata/locale-data debian/python3-babel/usr/lib/python3/dist-packages/babel/locale-data ; \
+	rm -r debian/python3-babel/usr/lib/python3/dist-packages/babel/global.dat ; \
+	ln -s ../../../../share/python-babel-localedata/global.dat debian/python3-babel/usr/lib/python3/dist-packages/babel/global.dat ; \
+
+override_dh_installdocs:
+	python3 -m sphinx docs docs/_build
+	dh_installdocs -O--buildsystem=python_distutils
+	mkdir -p debian/python-babel-doc/usr/share/doc/python-babel-doc/html
+	sed -i "s/locale='en_US_POSIX'/locale=[system locale]/g" docs/_build/*/*.html
+	cp -auxf docs/_build/* debian/python-babel-doc/usr/share/doc/python-babel-doc/html
+
+override_dh_sphinxdoc:
+	dh_sphinxdoc -O--buildsystem=python_distutils
+	find debian/python-babel-doc/usr/share/doc/python-babel-doc/html/_sources/ -name license*.txt -delete
+
+override_dh_auto_clean:
+	rm -rf docs/_build build Babel.egg-info
+	dh_auto_clean -O--buildsystem=python_distutils
+
+get-orig-source:
+	uscan --noconf --force-download --rename --download-current-version
+
+override_dh_auto_test:
+ifeq (,$(findstring nocheck, $(DEB_BUILD_OPTIONS)))
+	LC_ALL=C py.test
+	LC_ALL=C py.test-3
+endif

@@ -1,0 +1,144 @@
+Description: Skip freezegun tests for py2 as the python-freezegun
+  binary package has been removed.
+Author: Corey Bryant <corey.bryant@canonical.com>
+Forwarded: No
+
+--- a/tests/messages/test_frontend.py
++++ b/tests/messages/test_frontend.py
+@@ -11,7 +11,15 @@
+ # individuals. For the exact contribution history, see the revision
+ # history and logs, available at http://babel.edgewall.org/log/.
+ import shlex
+-from freezegun import freeze_time
++try:
++    from freezegun import freeze_time
++except ImportError as e:
++    def freeze_time(time_stamp=None):
++        def freeze_time_decorator(function):
++            def wrapper(self):
++                pass
++            return wrapper
++        return freeze_time_decorator
+ from datetime import datetime
+ from distutils.dist import Distribution
+ from distutils.errors import DistutilsOptionError
+@@ -151,6 +159,7 @@
+         self.assertRaises(DistutilsOptionError, self.cmd.finalize_options)
+ 
+     @freeze_time("1994-11-11")
++    @unittest.skipIf(sys.version_info <= (2, 7), "Skipping test for Python 2")
+     def test_extraction_with_default_mapping(self):
+         self.cmd.copyright_holder = 'FooBar, Inc.'
+         self.cmd.msgid_bugs_address = 'bugs.address@email.tld'
+@@ -209,6 +218,7 @@
+         self.assertEqual(expected_content, actual_content)
+ 
+     @freeze_time("1994-11-11")
++    @unittest.skipIf(sys.version_info <= (2, 7), "Skipping test for Python 2")
+     def test_extraction_with_mapping_file(self):
+         self.cmd.copyright_holder = 'FooBar, Inc.'
+         self.cmd.msgid_bugs_address = 'bugs.address@email.tld'
+@@ -262,6 +272,7 @@
+         self.assertEqual(expected_content, actual_content)
+ 
+     @freeze_time("1994-11-11")
++    @unittest.skipIf(sys.version_info <= (2, 7), "Skipping test for Python 2")
+     def test_extraction_with_mapping_dict(self):
+         self.dist.message_extractors = {
+             'project': [
+@@ -393,6 +404,7 @@
+         self.assertRaises(DistutilsOptionError, self.cmd.finalize_options)
+ 
+     @freeze_time("1994-11-11")
++    @unittest.skipIf(sys.version_info <= (2, 7), "Skipping test for Python 2")
+     def test_with_output_dir(self):
+         self.cmd.input_file = 'project/i18n/messages.pot'
+         self.cmd.locale = 'en_US'
+@@ -445,6 +457,7 @@
+         self.assertEqual(expected_content, actual_content)
+ 
+     @freeze_time("1994-11-11")
++    @unittest.skipIf(sys.version_info <= (2, 7), "Skipping test for Python 2")
+     def test_keeps_catalog_non_fuzzy(self):
+         self.cmd.input_file = 'project/i18n/messages_non_fuzzy.pot'
+         self.cmd.locale = 'en_US'
+@@ -497,6 +510,7 @@
+         self.assertEqual(expected_content, actual_content)
+ 
+     @freeze_time("1994-11-11")
++    @unittest.skipIf(sys.version_info <= (2, 7), "Skipping test for Python 2")
+     def test_correct_init_more_than_2_plurals(self):
+         self.cmd.input_file = 'project/i18n/messages.pot'
+         self.cmd.locale = 'lv_LV'
+@@ -551,6 +565,7 @@
+         self.assertEqual(expected_content, actual_content)
+ 
+     @freeze_time("1994-11-11")
++    @unittest.skipIf(sys.version_info <= (2, 7), "Skipping test for Python 2")
+     def test_correct_init_singular_plural_forms(self):
+         self.cmd.input_file = 'project/i18n/messages.pot'
+         self.cmd.locale = 'ja_JP'
+@@ -602,6 +617,7 @@
+         self.assertEqual(expected_content, actual_content)
+ 
+     @freeze_time("1994-11-11")
++    @unittest.skipIf(sys.version_info <= (2, 7), "Skipping test for Python 2")
+     def test_supports_no_wrap(self):
+         self.cmd.input_file = 'project/i18n/long_messages.pot'
+         self.cmd.locale = 'en_US'
+@@ -663,6 +679,7 @@
+         self.assertEqual(expected_content, actual_content)
+ 
+     @freeze_time("1994-11-11")
++    @unittest.skipIf(sys.version_info <= (2, 7), "Skipping test for Python 2")
+     def test_supports_width(self):
+         self.cmd.input_file = 'project/i18n/long_messages.pot'
+         self.cmd.locale = 'en_US'
+@@ -828,6 +845,7 @@
+         assert os.path.isfile(self._pot_file())
+ 
+     @freeze_time("1994-11-11")
++    @unittest.skipIf(sys.version_info <= (2, 7), "Skipping test for Python 2")
+     def test_extract_with_default_mapping(self):
+         pot_file = self._pot_file()
+         self.cli.run(sys.argv + ['extract',
+@@ -884,6 +902,7 @@
+         self.assertEqual(expected_content, actual_content)
+ 
+     @freeze_time("1994-11-11")
++    @unittest.skipIf(sys.version_info <= (2, 7), "Skipping test for Python 2")
+     def test_extract_with_mapping_file(self):
+         pot_file = self._pot_file()
+         self.cli.run(sys.argv + ['extract',
+@@ -935,6 +954,7 @@
+         self.assertEqual(expected_content, actual_content)
+ 
+     @freeze_time("1994-11-11")
++    @unittest.skipIf(sys.version_info <= (2, 7), "Skipping test for Python 2")
+     def test_extract_with_exact_file(self):
+         """Tests that we can call extract with a particular file and only
+         strings from that file get extracted. (Note the absence of strings from file1.py)
+@@ -984,6 +1004,7 @@
+         self.assertEqual(expected_content, actual_content)
+ 
+     @freeze_time("1994-11-11")
++    @unittest.skipIf(sys.version_info <= (2, 7), "Skipping test for Python 2")
+     def test_init_with_output_dir(self):
+         po_file = self._po_file('en_US')
+         self.cli.run(sys.argv + ['init',
+@@ -1035,6 +1056,7 @@
+         return os.path.join(self.datadir, 'project', 'i18n')
+ 
+     @freeze_time("1994-11-11")
++    @unittest.skipIf(sys.version_info <= (2, 7), "Skipping test for Python 2")
+     def test_init_singular_plural_forms(self):
+         po_file = self._po_file('ja_JP')
+         self.cli.run(sys.argv + ['init',
+@@ -1082,6 +1104,7 @@
+         self.assertEqual(expected_content, actual_content)
+ 
+     @freeze_time("1994-11-11")
++    @unittest.skipIf(sys.version_info <= (2, 7), "Skipping test for Python 2")
+     def test_init_more_than_2_plural_forms(self):
+         po_file = self._po_file('lv_LV')
+         self.cli.run(sys.argv + ['init',

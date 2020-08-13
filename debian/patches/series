@@ -1,0 +1,4 @@
+fix-conftest-compatibility-with-pytest-4.3.patch
+fix-sphinx-conf.py-to-avoid-intersphinx.patch
+skip-py2-freezegun-tests.patch
+0004-Fix-utils-test.patch
