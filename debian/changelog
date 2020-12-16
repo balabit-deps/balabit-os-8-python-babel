@@ -1,3 +1,9 @@
+python-babel (2.6.0+dfsg.1-1ubuntu2.1bb1) focal; urgency=medium
+
+  * Balabit patched version
+
+ -- Balabit Platform Team <devnull@dev.null>  Thu, 17 Dec 2020 00:32:50 +0100
+
 python-babel (2.6.0+dfsg.1-1ubuntu2.1) focal-proposed; urgency=medium
 
   * SRU: LP: #1891501.
