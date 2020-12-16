@@ -13,6 +13,7 @@ override_dh_auto_build:
 	dh_auto_build -O--buildsystem=python_distutils
 	# Generate the localedata folder data out of the xml files
 	# downloaded in debian/repack
+	mkdir -p babel/locale-data
 	python3 scripts/import_cldr.py common
 
 override_dh_auto_install:
